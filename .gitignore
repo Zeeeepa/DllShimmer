@@ -1,0 +1,5 @@
+project/
+*.dll
+*.lib
+*.def
+*.cpp

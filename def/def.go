@@ -13,7 +13,6 @@ type exportedFunction struct {
 
 type DefFile struct {
 	DllName           string
-	Path              string
 	exportedFunctions []exportedFunction
 }
 
@@ -37,7 +36,7 @@ func (d *DefFile) AddForwardedFunction(originalName string, forwarder string) {
 	})
 }
 
-func (d *DefFile) SaveFile() {
+func (d *DefFile) SaveFile(path string) {
 	var content string
 
 	content += "LIBRARY \"" + d.DllName + "\"\n"
@@ -61,7 +60,7 @@ func (d *DefFile) SaveFile() {
 
 	content += "\n"
 
-	err := os.WriteFile(d.Path, []byte(content), 0644)
+	err := os.WriteFile(path, []byte(content), 0644)
 	if err != nil {
 		log.Fatalf("[!] Error while creating .def file: %v", err)
 	}
