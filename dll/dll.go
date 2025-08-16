@@ -13,6 +13,7 @@ import (
 type ExportedFunction struct {
 	Name      string
 	Forwarder string
+	Ordinal   uint32
 }
 
 type Dll struct {
@@ -39,21 +40,22 @@ func ParseDll(path string) *Dll {
 		dll.ExportedFunctions = append(dll.ExportedFunctions, ExportedFunction{
 			Name:      function.Name,
 			Forwarder: function.Forwarder,
+			Ordinal:   function.Ordinal,
 		})
 	}
 
 	return &dll
 }
 
-func (d *Dll) CreateLibFile(path string) {
+func (d *Dll) CreateLibFile(path string, proxyName string) {
 	var def def.DefFile
-	def.DllName = d.Name
+	def.DllName = proxyName
 
 	for _, function := range d.ExportedFunctions {
 		if function.Forwarder == "" {
-			def.AddExportedFunction(function.Name)
+			def.AddExportedFunction(function.Name, function.Ordinal)
 		} else {
-			def.AddForwardedFunction(function.Name, function.Forwarder)
+			def.AddForwardedFunction(function.Name, function.Forwarder, function.Ordinal)
 		}
 	}
 
@@ -63,10 +65,10 @@ func (d *Dll) CreateLibFile(path string) {
 	}
 	defer os.Remove(f.Name())
 
-	def.SaveFile(f.Name())
+	def.SaveFile(f.Name(), true)
 
 	// Convert DLL to .lib file
-	cmd := exec.Command("x86_64-w64-mingw32-dlltool", "-d", f.Name(), "-l", path)
+	cmd := exec.Command("x86_64-w64-mingw32-dlltool", "-d", f.Name(), "-l", path, "-m", "i386:x86-64")
 	_, err = cmd.CombinedOutput()
 	if err != nil {
 		panic(err)

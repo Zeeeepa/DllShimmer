@@ -1,3 +1,5 @@
+{{- $r := . }}
+#include <windows.h>
 #include <stdio.h>
 #include <iostream>
 // Put your imports here...
@@ -6,15 +8,6 @@
 // |                        "DON'T TOUCH" ZONE                        |
 // |                         (auto generated)                         |
 // #------------------------------------------------------------------#
-
-{{- range .Functions}}
-#define {{.Name}} {{.Name}}Original
-{{- end}}
-#include <windows.h>
-{{- range .Functions}}
-#undef {{.Name}}
-{{- end}}
-{{ $r := . }}
 
 #define MUTEX(name) \
     (CreateMutexA(NULL, TRUE, name) && GetLastError() != ERROR_ALREADY_EXISTS)
@@ -64,9 +57,7 @@ typedef uint64_t (*Func12)(
 {{- range $i, $v := .Functions }}
 {{- if eq (len $v.Forwarder) 0 }}
 
-__declspec(dllimport) UINT64 {{$v.Name}}(UINT64 arg1, ...);
-
-extern "C" __declspec(dllexport) UINT64 {{$v.Name}}Fwd(UINT64 arg1, ...) {
+extern "C" UINT64 {{$v.Name}}Fwd(UINT64 arg1, ...) {
     #ifdef DEBUG
         printf("[+] {{$r.DllName}}: {{$v.Name}} called\n");
     #endif

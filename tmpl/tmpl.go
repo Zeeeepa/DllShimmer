@@ -15,8 +15,8 @@ type TemplateParams struct {
 	Mutex     bool
 }
 
-func CreateCodeFile(outputDir string, params TemplateParams) {
-	tmpl := template.Must(template.ParseFiles("templates/shim.c.template"))
+func CreateCodeFile(outputDir string, params TemplateParams, path string) {
+	tmpl := template.Must(template.ParseFiles(path))
 
 	f, err := os.Create(filepath.Join(outputDir, params.DllName+".cpp"))
 	if err != nil {
