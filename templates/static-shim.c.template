@@ -44,8 +44,6 @@ extern "C" UINT64 {{$v.Name}}Fwd(PARAMS) {
     // Put your code here...
     {{- end }}
     
-    MessageBoxA(NULL, "{{$v.Name}}", "My Message Box", MB_OK);
-
     return {{$v.Name}}(ARGS);
 }
 
@@ -59,6 +57,9 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     case DLL_PROCESS_ATTACH: {
         #ifdef DEBUG
             printf("[+] {{.DllName}}: DLL_PROCESS_ATTACH event\n");
+            WCHAR buf[MAX_PATH];
+            DWORD len = GetCurrentDirectoryW(MAX_PATH, buf);
+            wprintf(L"\tCurrent search directory: %s\n", buf);
         #endif
     }
     case DLL_THREAD_ATTACH:

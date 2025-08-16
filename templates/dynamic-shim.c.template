@@ -20,35 +20,31 @@ typedef uint64_t (*Func12)(
     uint64_t, uint64_t, uint64_t, uint64_t
 );
 
+#define T UINT64
+#define PARAMS T a1, T a2, T a3, T a4, T a5, T a6, T a7, T a8, T a9, T a10, T a11, T a12
+#define ARGS a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12
+
 #define PROXY_FUNCTION(function)                                                 \
-    va_list ap;                                                                  \
-    va_start(ap, arg1);                                                          \
-    uint64_t args[ARGS_COUNT];                                                   \
-    args[0] = arg1;                                                              \
-                                                                                 \
-    for (int i = 1; i < ARGS_COUNT ; i++) {                                      \
-        args[i] = va_arg(ap, uint64_t);                                          \
-    }                                                                            \
-                                                                                 \
-    va_end(ap);                                                                  \
-                                                                                 \
-    HMODULE hModule = LoadLibraryA("{{.ProxyDll}}");                             \
+                                                                              \
+    HMODULE hModule = LoadLibraryA("{{.OriginalPath}}");                         \
     if (hModule == NULL) {                                                       \
-        printf("[!] {{.DllName}}: LoadLibraryA({{.ProxyDll}}) failed\n");      \
+        printf("[!] {{.DllName}}: LoadLibraryA({{.OriginalPath}}) failed\n");    \
         printf("\tError code: %lu\n", GetLastError());                           \
+                                                                                 \
+        WCHAR buf[MAX_PATH];                                                     \
+        DWORD len = GetCurrentDirectoryW(MAX_PATH, buf);                         \
+        wprintf(L"\tCurrent search directory: %s\n", buf);                       \
     }                                                                            \
                                                                                  \
     Func12 pFunction = (Func12) GetProcAddress(hModule, function);               \
     if (pFunction == NULL) {                                                     \
         printf(                                                                  \
-            "[!] {{.DllName}}: GetProcAddress(%s, {{.ProxyDll}}) failed\n",     \
+            "[!] {{.DllName}}: GetProcAddress(%s, {{.OriginalPath}}) failed\n",  \
             function );                                                          \
         printf("\tError code: %lu\n", GetLastError());                           \
-                                                                                 \
     }                                                                            \
                                                                                  \
-    return pFunction(args[0], args[1], args[2], args[3], args[4], args[5],       \
-                        args[6], args[7], args[8], args[9], args[10], args[11]); \
+    return pFunction(ARGS); \
 
 // #------------------------------------------------------------------#
 // |                    END OF "DON'T TOUCH" ZONE                     |
@@ -57,7 +53,7 @@ typedef uint64_t (*Func12)(
 {{- range $i, $v := .Functions }}
 {{- if eq (len $v.Forwarder) 0 }}
 
-extern "C" UINT64 {{$v.Name}}Fwd(UINT64 arg1, ...) {
+extern "C" UINT64 {{$v.Name}}Fwd(PARAMS) {
     #ifdef DEBUG
         printf("[+] {{$r.DllName}}: {{$v.Name}} called\n");
     #endif
@@ -66,7 +62,7 @@ extern "C" UINT64 {{$v.Name}}Fwd(UINT64 arg1, ...) {
         // Put your code here...
     }
     {{- else }}
-        // Put your code here...
+    // Put your code here...
     {{- end }}
 
     PROXY_FUNCTION("{{$v.Name}}");

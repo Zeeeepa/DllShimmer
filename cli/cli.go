@@ -9,11 +9,11 @@ import (
 )
 
 type CliFlags struct {
-	Input  string
-	Output string
-	Proxy  string
-	Mutex  bool
-	Static bool
+	Input        string
+	Output       string
+	OriginalPath string
+	Mutex        bool
+	Static       bool
 }
 
 func IsValidWindowsDllName(filename string) bool {
@@ -42,8 +42,8 @@ func ParseCli() *CliFlags {
 	flag.StringVar(&flags.Output, "o", "", "")
 	flag.StringVar(&flags.Output, "output", "", "")
 
-	flag.StringVar(&flags.Proxy, "p", "", "")
-	flag.StringVar(&flags.Proxy, "proxy", "", "")
+	flag.StringVar(&flags.OriginalPath, "x", "", "")
+	flag.StringVar(&flags.OriginalPath, "original-path", "", "")
 
 	flag.BoolVar(&flags.Mutex, "m", false, "")
 	flag.BoolVar(&flags.Mutex, "mutex", false, "")
@@ -55,11 +55,11 @@ func ParseCli() *CliFlags {
 		fmt.Println()
 		fmt.Println("Usage:")
 		fmt.Println()
-		fmt.Printf("  %-24s %s\n", "-i, --input <path>", "Input DLL file (required)")
-		fmt.Printf("  %-24s %s\n", "-o, --output <path>", "Output directory (required)")
-		fmt.Printf("  %-24s %s\n", "-p, --proxy <path>", "Original DLL on target (required)")
+		fmt.Printf("  %-24s %s\n", "-i, --input <file>", "Input DLL file (required)")
+		fmt.Printf("  %-24s %s\n", "-o, --output <dir>", "Output directory (required)")
+		fmt.Printf("  %-24s %s\n", "-x, --original-path <path>", "Path to original DLL on target (required)")
 		fmt.Printf("  %-24s %s\n", "-m, --mutex", "Multiple execution prevention (default: false)")
-		fmt.Printf("  %-24s %s\n", "--static", "Original DLL loaded via static IAT (default: false)")
+		fmt.Printf("  %-24s %s\n", "--static", "Static linking to original DLL via IAT (default: false)")
 		fmt.Printf("  %-24s %s\n", "-h, --help", "Show this help")
 		fmt.Println()
 		fmt.Println("Example:")
@@ -72,12 +72,12 @@ func ParseCli() *CliFlags {
 
 	flag.Parse()
 
-	if flags.Input == "" || flags.Output == "" || flags.Proxy == "" {
+	if flags.Input == "" || flags.Output == "" || flags.OriginalPath == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	if flags.Static && !IsValidWindowsDllName(flags.Proxy) {
+	if flags.Static && !IsValidWindowsDllName(flags.OriginalPath) {
 		log.Fatalln("[!] In case of static linking enabled the proxy file (-p, --proxy) must be valid Windows DLL file name with no path information. E.g. kernel32.dll, user32.dll")
 	}
 

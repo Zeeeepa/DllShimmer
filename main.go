@@ -18,7 +18,7 @@ func main() {
 
 	var params tmpl.TemplateParams
 	params.Functions = dll.ExportedFunctions
-	params.ProxyDll = flags.Proxy
+	params.OriginalPath = flags.OriginalPath
 	params.DllName = filepath.Base(flags.Input)
 	params.Mutex = flags.Mutex
 
@@ -26,7 +26,7 @@ func main() {
 		tmpl.CreateCodeFile(outputDir, params, "templates/static-shim.c.template")
 
 		// Create .lib based on original DLL
-		dll.CreateLibFile(filepath.Join(outputDir, "original.lib"), params.ProxyDll)
+		dll.CreateLibFile(filepath.Join(outputDir, "original.lib"), params.OriginalPath)
 	} else {
 		tmpl.CreateCodeFile(outputDir, params, "templates/dynamic-shim.c.template")
 	}

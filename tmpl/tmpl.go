@@ -9,10 +9,10 @@ import (
 )
 
 type TemplateParams struct {
-	Functions []dll.ExportedFunction
-	ProxyDll  string
-	DllName   string
-	Mutex     bool
+	Functions    []dll.ExportedFunction
+	OriginalPath string
+	DllName      string
+	Mutex        bool
 }
 
 func CreateCodeFile(outputDir string, params TemplateParams, path string) {
