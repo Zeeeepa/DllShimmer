@@ -1,33 +1,22 @@
-# DllShimmer (WORK IN PROGRESS!)
+# DllShimmer
 
-Compile everything:
+<div style="text-align:center;font-style: italic;">Weaponize DLL hijacking easily. Backdoor any function in any DLL without disrupting normal process operation.</div>
 
-```bash
+## How it works
 
-x86_64-w64-mingw32-g++ -shared -o version.dll-shim shim.cpp version.def -static-libstdc++ -static-libgcc
-```
+DllShimmer parses the original DLL and extracts information about exported functions (name, ordinal number, and forwarder info). Based on this information, DllShimmer creates a boilerplate C++ file (`.cpp`). **The generated file allows you to add your own code to each function exported from the original DLL without disrupting the normal operation of the program.** No reverse engineering or instrumentation is required, because DllShimmer does not rely on function signatures (see more in “Limitations”)
 
-Tips:
+The second file generated is a `.def` file, which ensures that all DLLs exported from the proxy after compilation will have the same names and ordinal numbers as in the original DLL.
 
-1. Zawsze najpierw zrób dynamic linking.
+At the end, DllShimmer generates a ready-made command to compile the proxy DLL easily.
 
-Features:
+## Installation
 
-- Two linking methods: dynamic (LoadLibraryA) and static (via IAT).
-- All functions implemented in the original DLL can be backdoored.
-- Backdoored functions work as original, program doesn't crash.
-- Forwarded functions are forwarded as original.
-- Both MSVC (`#pragma comment`) and GCC forwarding (`.def file`) are supported.
+**Requirements**:
 
-Limitations:
-
-1. Probably it doesn't work with floating-point parameters because they require different registers to be used in ABI but I might be wrong, TODO: check
-2. There are some huge obfuscated DLLs with weird name mangling and tricks (e.g. Qt framework DLL). I don't recommend to use them as a backdoor base. Just use some normal DLL with 10-30 exported functions and it's going to work perfectly.
-3. It supports only x86-64.
-
-TODO:
-
-- Is dynamic loading also relative to EXE or callee DLL?
+- MinGW:
+  - `x86_64-w64-mingw32-g++`
+  - `x86_64-w64-mingw32-dlltool`
 
 ## Options
 
@@ -51,7 +40,23 @@ Enabling this option will add a mutex to the source file, which prevents your ba
 
 ### `--static` [optional]
 
-TBD;
+Enable static linking between the proxy DLL (IAT) and the original DLL (EAT). This generates an additional `.lib` file in the output directory, which acts as the original DLL for static compilation.
+
+This technique has some serious limitations compared to dynamic linking:
+
+- You cannot define a full or relative path to the original DLL. The system loader only uses the DLL name form proxy IAT and searches in the default paths.
+- Limited debugging information. If the original DLL fails to load, the program will usually crash without additional information.
+  
+However, static linking may be more stealthy and natural in some scenarios.
+
+By default, DllShimmer always uses dynamic linking with the `LoadLibraryA()` and `GetProcAddress()` functions.
+
+## Limitations
+
+- Only x86-64 / AMD64 architecture is supported.
+- Most likely, the generic proxy code will not work for functions with floating-point parameters, as they use different registers than integer ones utilized by DllShimmer. If you know the function signature, you can manually adjust it in the generated file.
+- Functions with more than 12 arguments will not work because this number has been hardcoded into DllShimmer templates.
+- There are some huge obfuscated DLLs with weird name mangling, calling conventions and tricks (e.g. Qt framework DLL). I don't recommend to use them as a proxy DLL. DllShimmer will generate some garbage in this case.
 
 ## Troubleshooting
 
@@ -71,3 +76,8 @@ In the case of dynamic linking, we have two options:
 In case of static linking, we really only have one option:
 
 1. Move the original DLL to the `Current Directory`.
+
+## TODO
+
+- Add some interesting graphics: PE -> Proxy DLL -> Original DLL
+- Auto-generate compilation script to output folder
