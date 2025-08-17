@@ -20,25 +20,25 @@ At the end, DllShimmer generates a ready-made command to compile the proxy DLL e
 
 ## Options
 
-### `-i / --input <file>` [required]
+**`-i / --input <file>`** [required]
 
 The original DLL that you want to backdoor.
 
-### `-o / --output <dir>` [required]
+**`-o / --output <dir>`** [required]
 
 The path to the directory where DllShimmer will save all generated files.
 
-### `-x / --original-path <path | file>` [required]
+**`-x / --original-path <path | file>`** [required]
 
 In case of dynamic linking (default) provide the path where the proxy DLL will find the original DLL on the target system.
 
 In the case of static linking (`--static`), specify only the name of the original DLL. It will be searched for according to the default loading order on Windows.
 
-### `-m / --mutex` [optional]
+**`-m / --mutex`** [optional]
 
 Enabling this option will add a mutex to the source file, which prevents your backdoor from being executed more than once during a single program run. All original functions will continue to work normally.
 
-### `--static` [optional]
+**`--static`** [optional]
 
 Enable static linking between the proxy DLL (IAT) and the original DLL (EAT). This generates an additional `.lib` file in the output directory, which acts as the original DLL for static compilation.
 
