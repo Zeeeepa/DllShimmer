@@ -4,8 +4,12 @@ import (
 	"dllshimmer/cli"
 	"dllshimmer/dll"
 	"dllshimmer/output"
+	"embed"
 	"path/filepath"
 )
+
+//go:embed templates/*
+var templatesFS embed.FS
 
 func main() {
 	flags := cli.ParseCli()
@@ -17,8 +21,9 @@ func main() {
 	// params.Mutex = flags.Mutex
 
 	out := output.Output{
-		Dll:       dll.ParseDll(flags.Input),
-		OutputDir: filepath.Clean(flags.Output),
+		Dll:         dll.ParseDll(flags.Input),
+		OutputDir:   filepath.Clean(flags.Output),
+		TemplatesFS: &templatesFS,
 	}
 
 	out.CreateCodeFile(flags.Mutex, flags.Static)

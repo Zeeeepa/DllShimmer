@@ -3,6 +3,7 @@ package output
 import (
 	"dllshimmer/def"
 	"dllshimmer/dll"
+	embed "embed"
 	"fmt"
 	"log"
 	"os"
@@ -12,8 +13,9 @@ import (
 )
 
 type Output struct {
-	Dll       *dll.Dll
-	OutputDir string
+	Dll         *dll.Dll
+	OutputDir   string
+	TemplatesFS *embed.FS
 }
 
 func (o *Output) GetDefFileName() string {
@@ -43,13 +45,23 @@ type CodeFileParams struct {
 	DllName      string
 }
 
-func (o *Output) CreateCodeFile(mutex bool, isStaticLinked bool) {
-	templateFile := "templates/dynamic-shim.c.template"
-	if isStaticLinked {
-		templateFile = "templates/static-shim.c.template"
+func (o *Output) GetTemplate(filename string) *template.Template {
+	path := filepath.Join("templates/", filename)
+	content, err := o.TemplatesFS.ReadFile(path)
+	if err != nil {
+		log.Fatalf("[!] Error while reading embedded template file '%s': %v", path, content)
 	}
 
-	tmpl := template.Must(template.ParseFiles(templateFile))
+	return template.Must(template.New("new").Parse(string(content)))
+}
+
+func (o *Output) CreateCodeFile(mutex bool, isStaticLinked bool) {
+	templateFile := "dynamic-shim.cpp.template"
+	if isStaticLinked {
+		templateFile = "static-shim.cpp.template"
+	}
+
+	tmpl := o.GetTemplate(templateFile)
 	outputPath := filepath.Join(o.OutputDir, o.GetCodeFileName())
 
 	f, err := os.Create(outputPath)
@@ -143,7 +155,7 @@ type CompileScriptParams struct {
 }
 
 func (o *Output) CreateCompileScript(isStaticLinked bool) {
-	tmpl := template.Must(template.ParseFiles("templates/compile.sh.template"))
+	tmpl := o.GetTemplate("compile.sh.template")
 	outputPath := filepath.Join(o.OutputDir, o.GetCompileScriptName())
 
 	f, err := os.Create(outputPath)
