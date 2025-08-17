@@ -3,7 +3,6 @@ package cli
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 )
@@ -16,7 +15,7 @@ type CliFlags struct {
 	Static       bool
 }
 
-func IsValidWindowsDllName(filename string) bool {
+func IsValidDllName(filename string) bool {
 	invalidChars := []rune{'<', '>', ':', '"', '/', '\\', '|', '?', '*'}
 
 	// Check for invalid characters
@@ -26,7 +25,7 @@ func IsValidWindowsDllName(filename string) bool {
 		}
 	}
 
-	if !strings.HasSuffix(filename, ".dll") {
+	if !strings.HasSuffix(strings.ToLower(filename), ".dll") {
 		return false
 	}
 
@@ -77,8 +76,10 @@ func ParseCli() *CliFlags {
 		os.Exit(1)
 	}
 
-	if flags.Static && !IsValidWindowsDllName(flags.OriginalPath) {
-		log.Fatalln("[!] In case of static linking enabled the proxy file (-p, --proxy) must be valid Windows DLL file name with no path information. E.g. kernel32.dll, user32.dll")
+	if flags.Static && !IsValidDllName(flags.OriginalPath) {
+		fmt.Fprintf(os.Stderr, "[!] Invalid parameter value:\n")
+		fmt.Fprintf(os.Stderr, "In case of static linking enabled '-x' parameter must be valid Windows DLL file name with no path information. E.g. kernel32.dll, user32.dll.")
+		os.Exit(1)
 	}
 
 	return &flags

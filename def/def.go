@@ -2,8 +2,6 @@ package def
 
 import (
 	"fmt"
-	"log"
-	"os"
 )
 
 type exportedFunction struct {
@@ -41,7 +39,7 @@ func (d *DefFile) AddForwardedFunction(originalName string, forwarder string, or
 	})
 }
 
-func (d *DefFile) SaveFile(path string, withOrdinals bool) {
+func (d *DefFile) GetContent() string {
 	var content string
 
 	content += "LIBRARY \"" + d.DllName + "\"\n"
@@ -62,15 +60,11 @@ func (d *DefFile) SaveFile(path string, withOrdinals bool) {
 			content += "\t" + function.OriginalName + "=" + function.Rename
 		}
 
-		if withOrdinals {
-			content += " " + "@" + fmt.Sprintf("%d", function.Ordinal)
-		}
+		// Add ordinals
+		content += " " + "@" + fmt.Sprintf("%d", function.Ordinal)
 
 		content += "\n"
 	}
 
-	err := os.WriteFile(path, []byte(content), 0644)
-	if err != nil {
-		log.Fatalf("[!] Error while creating .def file: %v", err)
-	}
+	return content
 }

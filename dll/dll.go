@@ -1,10 +1,7 @@
 package dll
 
 import (
-	"dllshimmer/def"
 	"log"
-	"os"
-	"os/exec"
 	"path/filepath"
 
 	peparser "github.com/saferwall/pe"
@@ -18,6 +15,7 @@ type ExportedFunction struct {
 
 type Dll struct {
 	Name              string
+	OriginalPath      string
 	ExportedFunctions []ExportedFunction
 }
 
@@ -45,32 +43,4 @@ func ParseDll(path string) *Dll {
 	}
 
 	return &dll
-}
-
-func (d *Dll) CreateLibFile(path string, proxyName string) {
-	var def def.DefFile
-	def.DllName = proxyName
-
-	for _, function := range d.ExportedFunctions {
-		if function.Forwarder == "" {
-			def.AddExportedFunction(function.Name, function.Ordinal)
-		} else {
-			def.AddForwardedFunction(function.Name, function.Forwarder, function.Ordinal)
-		}
-	}
-
-	f, err := os.CreateTemp("", "dllshimmer-*.def")
-	if err != nil {
-		panic(err)
-	}
-	defer os.Remove(f.Name())
-
-	def.SaveFile(f.Name(), true)
-
-	// Convert DLL to .lib file
-	cmd := exec.Command("x86_64-w64-mingw32-dlltool", "-d", f.Name(), "-l", path, "-m", "i386:x86-64")
-	_, err = cmd.CombinedOutput()
-	if err != nil {
-		panic(err)
-	}
 }
