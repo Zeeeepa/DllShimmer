@@ -1,16 +1,6 @@
 {
     "files.associations": {
-        "algorithm": "cpp",
-        "*.template": "c",
-        "cstdarg": "cpp",
-        "typeinfo": "c",
-        "functional": "cpp",
-        "array": "c",
-        "deque": "c",
-        "string": "c",
-        "unordered_map": "c",
-        "vector": "c",
-        "string_view": "c",
-        "initializer_list": "c"
+        "*.cpp.template": "cpp",
+        "*.sh.template": "shellscript",
     }
 }

@@ -72,7 +72,7 @@ func (o *Output) CreateCodeFile(mutex bool, isStaticLinked bool) {
 
 	params := CodeFileParams{
 		Functions:    o.Dll.ExportedFunctions,
-		OriginalPath: o.Dll.OriginalPath,
+		OriginalPath: sanitizePathForInjection(o.Dll.OriginalPath),
 		Mutex:        mutex,
 		DllName:      o.Dll.Name,
 	}

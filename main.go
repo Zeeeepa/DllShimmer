@@ -5,6 +5,7 @@ import (
 	"dllshimmer/dll"
 	"dllshimmer/output"
 	"embed"
+	"fmt"
 	"path/filepath"
 )
 
@@ -14,14 +15,10 @@ var templatesFS embed.FS
 func main() {
 	flags := cli.ParseCli()
 
-	// var params tmpl.CodeFileParams
-	// params.Functions = dll.ExportedFunctions
-	// params.OriginalPath = flags.OriginalPath
-	// params.DllName = filepath.Base(flags.Input)
-	// params.Mutex = flags.Mutex
+	cli.PrintBanner()
 
 	out := output.Output{
-		Dll:         dll.ParseDll(flags.Input),
+		Dll:         dll.ParseDll(flags.Input, flags.OriginalPath),
 		OutputDir:   filepath.Clean(flags.Output),
 		TemplatesFS: &templatesFS,
 	}
@@ -33,4 +30,12 @@ func main() {
 	if flags.Static {
 		out.CreateLibFile()
 	}
+
+	fmt.Println()
+	fmt.Println("What to do next?")
+	fmt.Println()
+	fmt.Printf("  1. Jump into the '%s/' directory.\n", out.OutputDir)
+	fmt.Printf("  2. Add your backdoor to the '%s' file.\n", out.GetCodeFileName())
+	fmt.Printf("  3. Compile project using the '%s' script.\n", out.GetCompileScriptName())
+	fmt.Println()
 }

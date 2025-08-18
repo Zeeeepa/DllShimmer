@@ -3,4 +3,4 @@ project/
 *.lib
 *.def
 *.cpp
-.vscode/
+./.vscode

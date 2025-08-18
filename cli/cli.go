@@ -77,10 +77,37 @@ func ParseCli() *CliFlags {
 	}
 
 	if flags.Static && !IsValidDllName(flags.OriginalPath) {
-		fmt.Fprintf(os.Stderr, "[!] Invalid parameter value:\n")
+		fmt.Fprintf(os.Stderr, "[!] Invalid '-x' parameter value:\n")
 		fmt.Fprintf(os.Stderr, "In case of static linking enabled '-x' parameter must be valid Windows DLL file name with no path information. E.g. kernel32.dll, user32.dll.")
 		os.Exit(1)
 	}
 
 	return &flags
+}
+
+func PrintBanner() {
+	banner := `
+▓█████▄  ██▓     ██▓                           
+▒██▀ ██▌▓██▒    ▓██▒                 By @Print3M
+░██   █▌▒██░    ▒██░            (print3m.github.io/)
+░▓█▄   ▌▒██░    ▒██░                           
+░▒████▓ ░██████▒░██████▒            Documentation:
+ ▒▒▓  ▒ ░ ▒░▓  ░░ ▒░▓  ░     github.com/Print3M/DllShimmer
+ ░ ▒  ▒ ░ ░ ▒  ░░ ░ ▒  ░                                   
+ ░ ░  ░   ░ ░     ░ ░                   2025
+   ░        ░  ░    ░  ░                                   
+ ░                                                         
+  ██████  ██░ ██  ██▓ ███▄ ▄███▓ ███▄ ▄███▓▓█████  ██▀███  
+▒██    ▒ ▓██░ ██▒▓██▒▓██▒▀█▀ ██▒▓██▒▀█▀ ██▒▓█   ▀ ▓██ ▒ ██▒
+░ ▓██▄   ▒██▀▀██░▒██▒▓██    ▓██░▓██    ▓██░▒███   ▓██ ░▄█ ▒
+  ▒   ██▒░▓█ ░██ ░██░▒██    ▒██ ▒██    ▒██ ▒▓█  ▄ ▒██▀▀█▄  
+▒██████▒▒░▓█▒░██▓░██░▒██▒   ░██▒▒██▒   ░██▒░▒████▒░██▓ ▒██▒
+▒ ▒▓▒ ▒ ░ ▒ ░░▒░▒░▓  ░ ▒░   ░  ░░ ▒░   ░  ░░░ ▒░ ░░ ▒▓ ░▒▓░
+░ ░▒  ░ ░ ▒ ░▒░ ░ ▒ ░░  ░      ░░  ░      ░ ░ ░  ░  ░▒ ░ ▒░
+░  ░  ░   ░  ░░ ░ ▒ ░░      ░   ░      ░      ░     ░░   ░ 
+      ░   ░  ░  ░ ░         ░          ░      ░  ░   ░     
+`
+
+	fmt.Print(banner)
+	fmt.Println()
 }
