@@ -20,6 +20,17 @@
 {{- end}}
 {{ $r := . }}
 
+void PrintCurrentDirectoryA() {
+    char buf[MAX_PATH];
+    DWORD len = GetCurrentDirectoryA(MAX_PATH, buf);
+    if (len == 0 || len >= MAX_PATH) {
+        printf("\tGetCurrentDirectoryA failed\n");
+        return;
+    }                                
+    printf("\tCurrent directory: '%s'\n", buf);  
+}
+
+
 #define MUTEX(name) \
     (CreateMutexA(NULL, TRUE, name) && GetLastError() != ERROR_ALREADY_EXISTS)
 
@@ -61,9 +72,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     case DLL_PROCESS_ATTACH: {
         #ifdef DEBUG
             printf("[+] {{.DllName}}: DLL_PROCESS_ATTACH event\n");
-            WCHAR buf[MAX_PATH];
-            DWORD len = GetCurrentDirectoryW(MAX_PATH, buf);
-            wprintf(L"\tCurrent search directory: %s\n", buf);
+            PrintCurrentDirectoryA();
         #endif
     }
     case DLL_THREAD_ATTACH:

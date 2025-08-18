@@ -32,7 +32,7 @@ func main() {
 	}
 
 	fmt.Println()
-	fmt.Println("What to do next?")
+	fmt.Println("Success! What to do next?")
 	fmt.Println()
 	fmt.Printf("  1. Jump into the '%s/' directory.\n", out.OutputDir)
 	fmt.Printf("  2. Add your backdoor to the '%s' file.\n", out.GetCodeFileName())

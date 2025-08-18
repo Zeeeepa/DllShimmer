@@ -63,7 +63,7 @@ func ParseCli() *CliFlags {
 		fmt.Println()
 		fmt.Println("Example:")
 		fmt.Println()
-		fmt.Println("  DllShimmer -i version.dll -o ./project -p 'C:\\Windows\\System32\\version.dll' -m")
+		fmt.Println("  DllShimmer -i version.dll -o ./project -x 'C:\\Windows\\System32\\version.dll' -m")
 		fmt.Println()
 		fmt.Println("Created by Print3M (print3m.github.io)")
 		fmt.Println()

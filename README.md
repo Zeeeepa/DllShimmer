@@ -101,4 +101,6 @@ In case of static linking, we really only have one option:
 
 ## TODO
 
-- Auto-generate compilation script to output folder
+- Cache LoadLibraryA() and GetProcAddress() pointers not to call WinAPI every time (better performance and more stealthy).
+- Improve the shim template code (leave as little code in the macro as possible. Is the macro actually required now when we use args/params trick?)
+- Maybe move boilerplate code into header file?
