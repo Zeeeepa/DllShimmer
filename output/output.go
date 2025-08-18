@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"text/template"
 )
@@ -46,7 +47,7 @@ type CodeFileParams struct {
 }
 
 func (o *Output) GetTemplate(filename string) *template.Template {
-	path := filepath.Join("templates/", filename)
+	path := path.Join("templates", filename)
 	content, err := o.TemplatesFS.ReadFile(path)
 	if err != nil {
 		log.Fatalf("[!] Error while reading embedded template file '%s': %v", path, content)

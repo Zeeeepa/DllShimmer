@@ -89,7 +89,7 @@ func PrintBanner() {
 	banner := `
 ▓█████▄  ██▓     ██▓                           
 ▒██▀ ██▌▓██▒    ▓██▒                 By @Print3M
-░██   █▌▒██░    ▒██░            (print3m.github.io/)
+░██   █▌▒██░    ▒██░            (print3m.github.io)
 ░▓█▄   ▌▒██░    ▒██░                           
 ░▒████▓ ░██████▒░██████▒            Documentation:
  ▒▒▓  ▒ ░ ▒░▓  ░░ ▒░▓  ░     github.com/Print3M/DllShimmer
