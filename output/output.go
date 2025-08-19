@@ -137,7 +137,7 @@ func (o *Output) CreateLibFile() {
 
 	// Convert DLL to .lib file
 	outputPath := filepath.Join(o.OutputDir, o.GetLibFileName())
-	cmd := exec.Command("x86_64-w64-mingw32-dlltool", "-d", temp.Name(), "-l", outputPath, "-m", "i386:x86-64")
+	cmd := exec.Command("dlltool", "-d", temp.Name(), "-l", outputPath, "-m", "i386:x86-64")
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
