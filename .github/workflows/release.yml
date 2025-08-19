@@ -47,24 +47,24 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release delete 1.0.4 --cleanup-tag --yes || echo "No release or tag found for 1.0.4"
+        gh release delete 1.0.5 --cleanup-tag --yes || echo "No release or tag found for 1.0.5"
+    
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: 1.0.4
-        release_name: DllShimmer 1.0.4
+        tag_name: 1.0.5
+        release_name: DllShimmer 1.0.5
         body: |
           DllShimmer Weaponize DLL hijacking easily. Backdoor any function in any DLL.
 
-          - [x] Bug fixes 
-          - [x] New banner 
-          - [x] Better help instruction 
-          - [x] Better debug logging
+          - [x] GitHub Actions workflow improvements 
+          - [x] Windows build improvements
         draft: false          
-        prerelease: false     
+        prerelease: false
+
     - name: Upload Windows asset
       uses: actions/upload-release-asset@v1
       env:
