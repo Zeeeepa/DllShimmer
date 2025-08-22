@@ -23,8 +23,12 @@ func (o *Output) GetDefFileName() string {
 	return o.Dll.Name + ".def"
 }
 
-func (o *Output) GetCodeFileName() string {
+func (o *Output) GetCppCodeFileName() string {
 	return o.Dll.Name + ".cpp"
+}
+
+func (o *Output) GetHdrCodeFileName() string {
+	return "dllshimmer.h"
 }
 
 func (o *Output) GetCompileScriptName() string {
@@ -56,21 +60,7 @@ func (o *Output) GetTemplate(filename string) *template.Template {
 	return template.Must(template.New("new").Parse(string(content)))
 }
 
-func (o *Output) CreateCodeFile(mutex bool, isStaticLinked bool) {
-	templateFile := "dynamic-shim.cpp.template"
-	if isStaticLinked {
-		templateFile = "static-shim.cpp.template"
-	}
-
-	tmpl := o.GetTemplate(templateFile)
-	outputPath := filepath.Join(o.OutputDir, o.GetCodeFileName())
-
-	f, err := os.Create(outputPath)
-	if err != nil {
-		log.Fatalf("[!] Error while creating '%s' file: %v", outputPath, err)
-	}
-	defer f.Close()
-
+func (o *Output) CreateCodeFiles(mutex bool, isStaticLinked bool) {
 	params := CodeFileParams{
 		Functions:    o.Dll.ExportedFunctions,
 		OriginalPath: sanitizePathForInjection(o.Dll.OriginalPath),
@@ -78,12 +68,23 @@ func (o *Output) CreateCodeFile(mutex bool, isStaticLinked bool) {
 		DllName:      o.Dll.Name,
 	}
 
-	err = tmpl.Execute(f, params)
-	if err != nil {
-		log.Fatalf("[!] Error of template engine: %v", err)
+	o.createCppCodeFile(params, isStaticLinked)
+	o.createHdrCodeFile(params)
+}
+
+func (o *Output) createCppCodeFile(params CodeFileParams, isStaticLinked bool) {
+	templateFile := "dynamic-shim.cpp.template"
+	if isStaticLinked {
+		templateFile = "static-shim.cpp.template"
 	}
 
-	fmt.Printf("[+] '%s' file created\n", outputPath)
+	outputPath := filepath.Join(o.OutputDir, o.GetCppCodeFileName())
+	createFileFromTemplate(o, templateFile, outputPath, params)
+}
+
+func (o *Output) createHdrCodeFile(params CodeFileParams) {
+	outputPath := filepath.Join(o.OutputDir, o.GetHdrCodeFileName())
+	createFileFromTemplate(o, "dllshimmer.h.template", outputPath, params)
 }
 
 func (o *Output) CreateDefFile() {
@@ -166,7 +167,7 @@ func (o *Output) CreateCompileScript(isStaticLinked bool) {
 	defer f.Close()
 
 	params := CompileScriptParams{
-		Code:           o.GetCodeFileName(),
+		Code:           o.GetCppCodeFileName(),
 		Def:            o.GetDefFileName(),
 		Output:         o.GetOutputDllName(),
 		IsStaticLinked: isStaticLinked,
