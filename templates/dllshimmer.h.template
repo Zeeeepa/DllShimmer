@@ -19,31 +19,31 @@
 typedef T (*FuncPtr)(PARAMS);
 
 typedef struct {
-  FILE *dbgOut;
-  HMODULE module;
-  std::unordered_map<std::string, FuncPtr> functions;
+    FILE *dbgOut;
+    HMODULE module;
+    std::unordered_map<std::string, FuncPtr> functions;
 } Ctx;
 
 Ctx gCtx = { .dbgOut = NULL, .module = NULL };
 
 void initDbg() {
-  if (gCtx.dbgOut != NULL) return;
+    if (gCtx.dbgOut != NULL) return;
 
 {{- if gt (len .DebugFile) 0  }}
   
   gCtx.dbgOut = fopen("{{.DebugFile}}", "w");
-  if (!gCtx.dbgOut) {
-    MessageBoxA(
-      NULL, 
-      "fopen({{.DebugFile}}) failed", 
-      "DllShimmer", 
-      MB_OK | MB_ICONINFORMATION
-    );
-  }
+    if (!gCtx.dbgOut) {
+        MessageBoxA(
+            NULL, 
+            "fopen({{.DebugFile}}) failed", 
+            "DllShimmer", 
+            MB_OK | MB_ICONINFORMATION
+        );
+    }
   
 {{- else }}
   
-  gCtx.dbgOut = stdout;
+    gCtx.dbgOut = stdout;
   
 {{- end }}
 }
@@ -51,18 +51,18 @@ void initDbg() {
 char gTimeBuf[9]; // "HH:MM:SS" + null
 
 char *getCurrentTime() {
-  time_t t = time(NULL);
-  struct tm lt;
-  localtime_s(&lt, &t);
-
-  strftime(gTimeBuf, sizeof(gTimeBuf), "%H:%M:%S", &lt);
-
-  return gTimeBuf;
+    time_t t = time(NULL);
+    struct tm lt;
+    localtime_s(&lt, &t);
+  
+    strftime(gTimeBuf, sizeof(gTimeBuf), "%H:%M:%S", &lt);
+  
+    return gTimeBuf;
 }
 
 void dbgf(const char *fmt, ...) {
     if (gCtx.dbgOut == NULL) {
-      initDbg();
+        initDbg();
     }
 
     va_list ap;
@@ -77,49 +77,47 @@ void dbgf(const char *fmt, ...) {
 }
 
 void dbgCurrentDirectory() {
-  char buf[MAX_PATH];
-  DWORD len = GetCurrentDirectoryA(MAX_PATH, buf);
-  if (len == 0 || len >= MAX_PATH) {
-    dbgf("GetCurrentDirectoryA failed");
-    return;
-  }
-
-  dbgf("\tCurrent directory: '%s'", buf);
+    char buf[MAX_PATH];
+    DWORD len = GetCurrentDirectoryA(MAX_PATH, buf);
+    if (len == 0 || len >= MAX_PATH) {
+        dbgf("GetCurrentDirectoryA failed");
+        return;
+    }
+  
+    dbgf("\tCurrent directory: '%s'", buf);
 }
-
 
 FuncPtr getProxyFunc(const char *funcName) {
-  // Module pointer is cached
-  if (gCtx.module == NULL) {
-    gCtx.module = LoadLibraryA("{{.Original}}");
+    // Module pointer is cached
     if (gCtx.module == NULL) {
-      dbgf("LoadLibraryA({{.Original}}) failed");
-      dbgf("\tError code: %lu", GetLastError());
-      dbgCurrentDirectory();
-      
-      return NULL;
+      gCtx.module = LoadLibraryA("{{.Original}}");
+      if (gCtx.module == NULL) {
+        dbgf("LoadLibraryA({{.Original}}) failed");
+        dbgf("\tError code: %lu", GetLastError());
+        dbgCurrentDirectory();
+        
+        return NULL;
+      }
     }
-  }
 
-  std::string strFuncName(funcName);
+    std::string strFuncName(funcName);
+  
+    // Function pointer is cached
+    if (gCtx.functions.find(strFuncName) != gCtx.functions.end()) {
+        return gCtx.functions[strFuncName];
+    }
+  
+    FuncPtr pFunc = (FuncPtr)GetProcAddress(gCtx.module, funcName);
+    if (pFunc == NULL) {
+        dbgf("GetProcAddress(%s, {{.Original}}) failed", funcName);
+        dbgf("\tError code: %lu", GetLastError());
+    }
+  
+    gCtx.functions[strFuncName] = pFunc;
+  
+    return pFunc;
+}  
 
-  // Function pointer is cached
-  if (gCtx.functions.find(strFuncName) != gCtx.functions.end()) {
-    return gCtx.functions[strFuncName];
-  }
-
-  FuncPtr pFunc = (FuncPtr)GetProcAddress(gCtx.module, funcName);
-  if (pFunc == NULL) {
-    dbgf("GetProcAddress(%s, {{.Original}}) failed", funcName);
-    dbgf("\tError code: %lu", GetLastError());
-  }
-
-  gCtx.functions[strFuncName] = pFunc;
-
-  return pFunc;
-}
-
-#define MUTEX(name)                                                            \
-  (CreateMutexA(NULL, TRUE, name) && GetLastError() != ERROR_ALREADY_EXISTS)
+#define MUTEX(name) (CreateMutexA(NULL, TRUE, name) && GetLastError() != ERROR_ALREADY_EXISTS)
 
 #define PROXY_FUNCTION(funcName) getProxyFunc(funcName)(ARGS);
