@@ -47,7 +47,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release delete 1.0.5 --cleanup-tag --yes || echo "No release or tag found for 1.0.5"
+        gh release delete 1.1.0 --cleanup-tag --yes || echo "No release or tag found for 1.1.0"
     
     - name: Create Release
       id: create_release
@@ -55,13 +55,13 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: 1.0.5
-        release_name: DllShimmer 1.0.5
+        tag_name: 1.1.0
+        release_name: DllShimmer 1.1.0
         body: |
-          DllShimmer Weaponize DLL hijacking easily. Backdoor any function in any DLL.
-
-          - [x] GitHub Actions workflow improvements 
-          - [x] Windows build improvements
+          - [x] Dynamic linking is now cached (both LoadLibraryA and GetProcAddress). Performance improved.
+          - [x] Better debug log format: timestamp added. 
+          - [x] New parameter: `--debug-file`. Save debug logs to file.
+          - [x] README updated. 
         draft: false          
         prerelease: false
 

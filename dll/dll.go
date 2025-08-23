@@ -15,15 +15,15 @@ type ExportedFunction struct {
 
 type Dll struct {
 	Name              string
-	OriginalPath      string
+	Original          string
 	ExportedFunctions []ExportedFunction
 }
 
-func ParseDll(path string, originalPath string) *Dll {
+func ParseDll(path string, original string) *Dll {
 	var dll Dll
 
 	dll.Name = filepath.Base(path)
-	dll.OriginalPath = originalPath
+	dll.Original = original
 
 	pe, err := peparser.New(path, &peparser.Options{})
 	if err != nil {

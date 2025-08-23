@@ -38,15 +38,15 @@ Example:
 
 Parameters:
 
-**`-i / --input <file>`** [required]
+**`-i / --input <path>`** [required]
 
 The original DLL that you want to backdoor.
 
-**`-o / --output <dir>`** [required]
+**`-o / --output <path>`** [required]
 
 The path to the directory where DllShimmer will save all generated files.
 
-**`-x / --original-path <path | file>`** [required]
+**`-x / --original <path>`** [required]
 
 In case of dynamic linking (default) provide the path where the proxy DLL will find the original DLL on the target system.
 
@@ -67,7 +67,17 @@ This technique has some serious limitations compared to dynamic linking:
   
 However, static linking may be more stealthy and natural in some scenarios.
 
-By default, DllShimmer always uses dynamic linking with the `LoadLibraryA()` and `GetProcAddress()` functions.
+Default: DllShimmer always uses dynamic linking with the `LoadLibraryA()` and `GetProcAddress()` functions.
+
+**`--debug-file <path>`** [optional]
+
+Save debug logs to a file. Logs are written to a file on an ongoing basis while the program is running. If selected, logs are not printed to STDOUT.
+
+Default: DllShimmer always writes debug logs to STDOUT.
+
+Example debug output:
+
+![Example debug output](_img/img-2.png)
 
 ## Limitations
 
@@ -77,6 +87,12 @@ By default, DllShimmer always uses dynamic linking with the `LoadLibraryA()` and
 - There are some huge obfuscated DLLs with weird name mangling, calling conventions and tricks (e.g. compiled Qt framework DLL). I don't recommend to use them as a proxy DLL. DllShimmer most probably will generate some garbage in this case.
 
 ## Troubleshooting
+
+Before you start troubleshooting:
+
+1. Read "Limitations".
+2. Make sure you don't use static linking (`--static`). It's easier to debug with dynamic linking (default).
+3. Save debug output to file (`--debug-file`).
 
 ### _In the generated `.cpp` file, I don't see all the exported functions from the original DLL._
 
@@ -102,5 +118,3 @@ In case of static linking, we really only have one option:
 ## TODO
 
 - Cache LoadLibraryA() and GetProcAddress() pointers not to call WinAPI every time (better performance and more stealthy).
-- Improve the shim template code (leave as little code in the macro as possible. Is the macro actually required now when we use args/params trick?)
-- Maybe move boilerplate code into header file?

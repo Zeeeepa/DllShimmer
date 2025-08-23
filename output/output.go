@@ -23,8 +23,12 @@ func (o *Output) GetDefFileName() string {
 	return o.Dll.Name + ".def"
 }
 
-func (o *Output) GetCodeFileName() string {
+func (o *Output) GetCppCodeFileName() string {
 	return o.Dll.Name + ".cpp"
+}
+
+func (o *Output) GetHdrCodeFileName() string {
+	return "dllshimmer.h"
 }
 
 func (o *Output) GetCompileScriptName() string {
@@ -40,10 +44,12 @@ func (o *Output) GetLibFileName() string {
 }
 
 type CodeFileParams struct {
-	Functions    []dll.ExportedFunction
-	OriginalPath string
-	Mutex        bool
-	DllName      string
+	Functions      []dll.ExportedFunction
+	Original       string
+	Mutex          bool
+	DllName        string
+	DebugFile      string
+	IsStaticLinked bool
 }
 
 func (o *Output) GetTemplate(filename string) *template.Template {
@@ -56,34 +62,33 @@ func (o *Output) GetTemplate(filename string) *template.Template {
 	return template.Must(template.New("new").Parse(string(content)))
 }
 
-func (o *Output) CreateCodeFile(mutex bool, isStaticLinked bool) {
+func (o *Output) CreateCodeFiles(mutex bool, debugFile string, isStaticLinked bool) {
+	params := CodeFileParams{
+		Functions:      o.Dll.ExportedFunctions,
+		Original:       sanitizePathForInjection(o.Dll.Original),
+		Mutex:          mutex,
+		DllName:        o.Dll.Name,
+		DebugFile:      sanitizePathForInjection(debugFile),
+		IsStaticLinked: isStaticLinked,
+	}
+
+	o.createCppCodeFile(params)
+	o.createHdrCodeFile(params)
+}
+
+func (o *Output) createCppCodeFile(params CodeFileParams) {
 	templateFile := "dynamic-shim.cpp.template"
-	if isStaticLinked {
+	if params.IsStaticLinked {
 		templateFile = "static-shim.cpp.template"
 	}
 
-	tmpl := o.GetTemplate(templateFile)
-	outputPath := filepath.Join(o.OutputDir, o.GetCodeFileName())
+	outputPath := filepath.Join(o.OutputDir, o.GetCppCodeFileName())
+	createFileFromTemplate(o, templateFile, outputPath, params)
+}
 
-	f, err := os.Create(outputPath)
-	if err != nil {
-		log.Fatalf("[!] Error while creating '%s' file: %v", outputPath, err)
-	}
-	defer f.Close()
-
-	params := CodeFileParams{
-		Functions:    o.Dll.ExportedFunctions,
-		OriginalPath: sanitizePathForInjection(o.Dll.OriginalPath),
-		Mutex:        mutex,
-		DllName:      o.Dll.Name,
-	}
-
-	err = tmpl.Execute(f, params)
-	if err != nil {
-		log.Fatalf("[!] Error of template engine: %v", err)
-	}
-
-	fmt.Printf("[+] '%s' file created\n", outputPath)
+func (o *Output) createHdrCodeFile(params CodeFileParams) {
+	outputPath := filepath.Join(o.OutputDir, o.GetHdrCodeFileName())
+	createFileFromTemplate(o, "dllshimmer.h.template", outputPath, params)
 }
 
 func (o *Output) CreateDefFile() {
@@ -112,8 +117,8 @@ func (o *Output) CreateDefFile() {
 func (o *Output) CreateLibFile() {
 	var def def.DefFile
 
-	// In case of static linking OriginalPath is DLL name itself
-	def.DllName = o.Dll.OriginalPath
+	// In case of static linking Original is DLL name itself
+	def.DllName = o.Dll.Original
 
 	for _, function := range o.Dll.ExportedFunctions {
 		if function.Forwarder == "" {
@@ -166,7 +171,7 @@ func (o *Output) CreateCompileScript(isStaticLinked bool) {
 	defer f.Close()
 
 	params := CompileScriptParams{
-		Code:           o.GetCodeFileName(),
+		Code:           o.GetCppCodeFileName(),
 		Def:            o.GetDefFileName(),
 		Output:         o.GetOutputDllName(),
 		IsStaticLinked: isStaticLinked,
