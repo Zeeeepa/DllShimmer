@@ -71,9 +71,13 @@ Default: DllShimmer always uses dynamic linking with the `LoadLibraryA()` and `G
 
 **`--debug-file <path>`** [optional]
 
-Save debug logs to a file. Logs are written to a file on an ongoing basis while the program is running.
+Save debug logs to a file. Logs are written to a file on an ongoing basis while the program is running. If selected, logs are not printed to STDOUT.
 
 Default: DllShimmer always writes debug logs to STDOUT.
+
+Example debug output:
+
+![Example debug output](_img/img-2.png)
 
 ## Limitations
 
@@ -83,6 +87,12 @@ Default: DllShimmer always writes debug logs to STDOUT.
 - There are some huge obfuscated DLLs with weird name mangling, calling conventions and tricks (e.g. compiled Qt framework DLL). I don't recommend to use them as a proxy DLL. DllShimmer most probably will generate some garbage in this case.
 
 ## Troubleshooting
+
+Before you start troubleshooting:
+
+1. Read "Limitations".
+2. Make sure you don't use static linking (`--static`). It's easier to debug with dynamic linking (default).
+3. Save debug output to file (`--debug-file`).
 
 ### _In the generated `.cpp` file, I don't see all the exported functions from the original DLL._
 
