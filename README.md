@@ -114,7 +114,3 @@ In the case of dynamic linking, we have two options:
 In case of static linking, we really only have one option:
 
 1. Move the original DLL to the `Current Directory`.
-
-## TODO
-
-- Cache LoadLibraryA() and GetProcAddress() pointers not to call WinAPI every time (better performance and more stealthy).
