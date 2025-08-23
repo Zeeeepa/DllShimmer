@@ -13,7 +13,7 @@
 
 extern "C" UINT64 {{$v.Name}}Fwd(PARAMS) {
     #ifdef DEBUG
-        logf("[+] {{$r.DllName}}: {{$v.Name}} called\n");
+        dbgf("{{$v.Name}} called");
     #endif
     {{ if $r.Mutex }}
     if (MUTEX("Global\\{{$v.Name}}__{{$i}}")) {
@@ -32,11 +32,11 @@ extern "C" UINT64 {{$v.Name}}Fwd(PARAMS) {
 
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) { 
-    
+
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH: {
         #ifdef DEBUG
-            logf("[+] {{.DllName}}: DLL_PROCESS_ATTACH event\n");
+            dbgf("DLL_PROCESS_ATTACH");
         #endif
     }
     case DLL_THREAD_ATTACH:

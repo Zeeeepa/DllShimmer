@@ -38,15 +38,15 @@ Example:
 
 Parameters:
 
-**`-i / --input <file>`** [required]
+**`-i / --input <path>`** [required]
 
 The original DLL that you want to backdoor.
 
-**`-o / --output <dir>`** [required]
+**`-o / --output <path>`** [required]
 
 The path to the directory where DllShimmer will save all generated files.
 
-**`-x / --original-path <path | file>`** [required]
+**`-x / --original <path>`** [required]
 
 In case of dynamic linking (default) provide the path where the proxy DLL will find the original DLL on the target system.
 
@@ -67,7 +67,13 @@ This technique has some serious limitations compared to dynamic linking:
   
 However, static linking may be more stealthy and natural in some scenarios.
 
-By default, DllShimmer always uses dynamic linking with the `LoadLibraryA()` and `GetProcAddress()` functions.
+Default: DllShimmer always uses dynamic linking with the `LoadLibraryA()` and `GetProcAddress()` functions.
+
+**`--debug-file <path>`** [optional]
+
+Save debug logs to a file. Logs are written to a file on an ongoing basis while the program is running.
+
+Default: DllShimmer always writes debug logs to STDOUT.
 
 ## Limitations
 
@@ -102,4 +108,3 @@ In case of static linking, we really only have one option:
 ## TODO
 
 - Cache LoadLibraryA() and GetProcAddress() pointers not to call WinAPI every time (better performance and more stealthy).
-- Improve the shim template code (leave as little code in the macro as possible. Is the macro actually required now when we use args/params trick?)

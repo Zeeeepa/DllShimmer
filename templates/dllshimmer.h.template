@@ -7,27 +7,34 @@
 
 #include <stdio.h>
 #include <windows.h>
+#include <time.h>
 
 #define T UINT64
 #define PARAMS                                                                 \
   T a1, T a2, T a3, T a4, T a5, T a6, T a7, T a8, T a9, T a10, T a11, T a12
 #define ARGS a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12
 
-#define logf(...) fprintf(CTX.dbgOut, __VA_ARGS__)
+typedef T (*FuncPtr)(PARAMS);
 
 typedef struct {
   FILE *dbgOut;
 } Ctx;
 
-Ctx CTX;
+Ctx CTX = {.dbgOut = NULL };
 
-void InitCTX() {
+void initDbg() {
+  if (CTX.dbgOut != NULL) return;
+
 {{- if gt (len .DebugFile) 0  }}
   
   CTX.dbgOut = fopen("{{.DebugFile}}", "w");
   if (!CTX.dbgOut) {
-    // TODO: Change to message box
-    perror("fopen");
+    MessageBoxA(
+      NULL, 
+      "fopen({{.DebugFile}}) failed", 
+      "DllShimmer", 
+      MB_OK | MB_ICONINFORMATION
+    );
   }
   
 {{- else }}
@@ -37,32 +44,61 @@ void InitCTX() {
 {{- end }}
 }
 
-typedef T (*FuncPtr)(PARAMS);
+char TIME_BUF[9]; // "HH:MM:SS" + null
 
-void LogCurrentDirectory() {
+char *getCurrentTime() {
+  time_t t = time(NULL);
+  struct tm lt;
+  localtime_s(&lt, &t);
+
+  strftime(TIME_BUF, sizeof(TIME_BUF), "%H:%M:%S", &lt);
+
+  return TIME_BUF;
+}
+
+void dbgf(const char *fmt, ...) {
+    if (CTX.dbgOut == NULL) {
+      initDbg();
+    }
+
+    va_list ap;
+    va_start(ap, fmt);
+
+    fprintf(CTX.dbgOut, "[DBG] {{.DllName}} | %s | ", getCurrentTime());
+    vfprintf(CTX.dbgOut, fmt, ap);
+    fprintf(CTX.dbgOut, "\n");
+    fflush(CTX.dbgOut);
+
+    va_end(ap);
+}
+
+void InitCache() {
+  
+}
+
+void dbgCurrentDirectory() {
   char buf[MAX_PATH];
   DWORD len = GetCurrentDirectoryA(MAX_PATH, buf);
   if (len == 0 || len >= MAX_PATH) {
-    logf("\tGetCurrentDirectoryA failed\n");
+    dbgf("GetCurrentDirectoryA failed");
     return;
   }
 
-  logf("\tCurrent directory: '%s'\n", buf);
+  dbgf("\tCurrent directory: '%s'", buf);
 }
 
 FuncPtr getProxyFunc(const char *funcName) {
   HMODULE hModule = LoadLibraryA("{{.Original}}");
   if (hModule == NULL) {
-    logf("[!] {{.DllName}}: LoadLibraryA({{.Original}}) failed\n");
-    logf("\tError code: %lu\n", GetLastError());
-    LogCurrentDirectory();
+    dbgf("LoadLibraryA({{.Original}}) failed");
+    dbgf("\tError code: %lu", GetLastError());
+    dbgCurrentDirectory();
   }
 
   FuncPtr pFunc = (FuncPtr)GetProcAddress(hModule, funcName);
   if (pFunc == NULL) {
-    logf("[!] {{.DllName}}: GetProcAddress(%s, {{.Original}}) failed\n",
-           funcName);
-    logf("\tError code: %lu\n", GetLastError());
+    dbgf("GetProcAddress(%s, {{.Original}}) failed", funcName);
+    dbgf("\tError code: %lu", GetLastError());
   }
 
   return pFunc;

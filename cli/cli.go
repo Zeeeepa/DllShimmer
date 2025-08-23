@@ -62,7 +62,7 @@ func ParseCli() *CliFlags {
 		fmt.Printf("  %-26s %s\n", "-o, --output <path>", "Output directory (required)")
 		fmt.Printf("  %-26s %s\n", "-x, --original <path>", "Path to original DLL on target (required)")
 		fmt.Printf("  %-26s %s\n", "-m, --mutex", "Multiple execution prevention (default: false)")
-		fmt.Printf("  %-26s %s\n", "    --debug-file <path>", "Save debug logs to file")
+		fmt.Printf("  %-26s %s\n", "    --debug-file <path>", "Save debug logs to a file (default: stdout)")
 		fmt.Printf("  %-26s %s\n", "    --static", "Static linking to original DLL via IAT (default: false)")
 		fmt.Printf("  %-26s %s\n", "-h, --help", "Show this help")
 		fmt.Println()

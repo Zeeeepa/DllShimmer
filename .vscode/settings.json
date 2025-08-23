@@ -3,6 +3,7 @@
         "*.cpp.template": "cpp",
         "*.sh.template": "shellscript",
         "functional": "cpp",
-        "*.template": "cpp"
+        "*.template": "cpp",
+        "cstdarg": "cpp"
     }
 }
