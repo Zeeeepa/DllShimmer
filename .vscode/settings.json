@@ -2,6 +2,7 @@
     "files.associations": {
         "*.cpp.template": "cpp",
         "*.sh.template": "shellscript",
-        "functional": "cpp"
+        "functional": "cpp",
+        "*.template": "cpp"
     }
 }

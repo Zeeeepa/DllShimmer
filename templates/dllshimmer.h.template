@@ -5,49 +5,72 @@
 // |                         (auto generated)                         |
 // #------------------------------------------------------------------#
 
-#include <windows.h>
 #include <stdio.h>
+#include <windows.h>
 
 #define T UINT64
 #define PARAMS                                                                 \
   T a1, T a2, T a3, T a4, T a5, T a6, T a7, T a8, T a9, T a10, T a11, T a12
 #define ARGS a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12
 
+#define logf(...) fprintf(CTX.dbgOut, __VA_ARGS__)
+
+typedef struct {
+  FILE *dbgOut;
+} Ctx;
+
+Ctx CTX;
+
+void InitCTX() {
+{{- if gt (len .DebugFile) 0  }}
+  
+  CTX.dbgOut = fopen("{{.DebugFile}}", "w");
+  if (!CTX.dbgOut) {
+    // TODO: Change to message box
+    perror("fopen");
+  }
+  
+{{- else }}
+  
+  CTX.dbgOut = stdout;
+  
+{{- end }}
+}
+
 typedef T (*FuncPtr)(PARAMS);
 
-
-void PrintCurrentDirectory() {
+void LogCurrentDirectory() {
   char buf[MAX_PATH];
   DWORD len = GetCurrentDirectoryA(MAX_PATH, buf);
   if (len == 0 || len >= MAX_PATH) {
-    printf("\tGetCurrentDirectoryA failed\n");
+    logf("\tGetCurrentDirectoryA failed\n");
     return;
   }
 
-  printf("\tCurrent directory: '%s'\n", buf);
+  logf("\tCurrent directory: '%s'\n", buf);
 }
 
-
 FuncPtr getProxyFunc(const char *funcName) {
-  HMODULE hModule = LoadLibraryA("{{.OriginalPath}}");
+  HMODULE hModule = LoadLibraryA("{{.Original}}");
   if (hModule == NULL) {
-    printf("[!] {{.DllName}}: LoadLibraryA({{.OriginalPath}}) failed\n");
-    printf("\tError code: %lu\n", GetLastError());
-    PrintCurrentDirectory();
+    logf("[!] {{.DllName}}: LoadLibraryA({{.Original}}) failed\n");
+    logf("\tError code: %lu\n", GetLastError());
+    LogCurrentDirectory();
   }
 
   FuncPtr pFunc = (FuncPtr)GetProcAddress(hModule, funcName);
   if (pFunc == NULL) {
-    printf("[!] {{.DllName}}: GetProcAddress(%s, {{.OriginalPath}}) failed\n",
+    logf("[!] {{.DllName}}: GetProcAddress(%s, {{.Original}}) failed\n",
            funcName);
-    printf("\tError code: %lu\n", GetLastError());
+    logf("\tError code: %lu\n", GetLastError());
   }
 
   return pFunc;
 }
 
-
 #define MUTEX(name)                                                            \
   (CreateMutexA(NULL, TRUE, name) && GetLastError() != ERROR_ALREADY_EXISTS)
 
 #define PROXY_FUNCTION(funcName) getProxyFunc(funcName)(ARGS);
+
+// TODO: Cache LoadLibraryA() and GetProcAddress() result

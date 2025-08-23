@@ -18,12 +18,12 @@ func main() {
 	cli.PrintBanner()
 
 	out := output.Output{
-		Dll:         dll.ParseDll(flags.Input, flags.OriginalPath),
+		Dll:         dll.ParseDll(flags.Input, flags.Original),
 		OutputDir:   filepath.Clean(flags.Output),
 		TemplatesFS: &templatesFS,
 	}
 
-	out.CreateCodeFiles(flags.Mutex, flags.Static)
+	out.CreateCodeFiles(flags.Mutex, flags.DebugFile, flags.Static)
 	out.CreateDefFile()
 	out.CreateCompileScript(flags.Static)
 

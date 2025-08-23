@@ -32,7 +32,7 @@ extern "C" __declspec(dllimport) UINT64 {{$v.Name}}(PARAMS);
 
 extern "C" UINT64 {{$v.Name}}Fwd(PARAMS) {
     #ifdef DEBUG
-        printf("[+] {{$r.DllName}}: {{$v.Name}} called\n");
+        logf("[+] {{$r.DllName}}: {{$v.Name}} called\n");
     #endif
     {{ if $r.Mutex }}
     if (MUTEX("Global\\{{$v.Name}}__{{$i}}")) {
@@ -54,8 +54,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     switch (fdwReason) {
     case DLL_PROCESS_ATTACH: {
         #ifdef DEBUG
-            printf("[+] {{.DllName}}: DLL_PROCESS_ATTACH event\n");
-            PrintCurrentDirectory();
+            logf("[+] {{.DllName}}: DLL_PROCESS_ATTACH event\n");
+            LogCurrentDirectory();
         #endif
     }
     case DLL_THREAD_ATTACH:

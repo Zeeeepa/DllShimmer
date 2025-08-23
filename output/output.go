@@ -44,10 +44,12 @@ func (o *Output) GetLibFileName() string {
 }
 
 type CodeFileParams struct {
-	Functions    []dll.ExportedFunction
-	OriginalPath string
-	Mutex        bool
-	DllName      string
+	Functions      []dll.ExportedFunction
+	Original       string
+	Mutex          bool
+	DllName        string
+	DebugFile      string
+	IsStaticLinked bool
 }
 
 func (o *Output) GetTemplate(filename string) *template.Template {
@@ -60,21 +62,23 @@ func (o *Output) GetTemplate(filename string) *template.Template {
 	return template.Must(template.New("new").Parse(string(content)))
 }
 
-func (o *Output) CreateCodeFiles(mutex bool, isStaticLinked bool) {
+func (o *Output) CreateCodeFiles(mutex bool, debugFile string, isStaticLinked bool) {
 	params := CodeFileParams{
-		Functions:    o.Dll.ExportedFunctions,
-		OriginalPath: sanitizePathForInjection(o.Dll.OriginalPath),
-		Mutex:        mutex,
-		DllName:      o.Dll.Name,
+		Functions:      o.Dll.ExportedFunctions,
+		Original:       sanitizePathForInjection(o.Dll.Original),
+		Mutex:          mutex,
+		DllName:        o.Dll.Name,
+		DebugFile:      sanitizePathForInjection(debugFile),
+		IsStaticLinked: isStaticLinked,
 	}
 
-	o.createCppCodeFile(params, isStaticLinked)
+	o.createCppCodeFile(params)
 	o.createHdrCodeFile(params)
 }
 
-func (o *Output) createCppCodeFile(params CodeFileParams, isStaticLinked bool) {
+func (o *Output) createCppCodeFile(params CodeFileParams) {
 	templateFile := "dynamic-shim.cpp.template"
-	if isStaticLinked {
+	if params.IsStaticLinked {
 		templateFile = "static-shim.cpp.template"
 	}
 
@@ -113,8 +117,8 @@ func (o *Output) CreateDefFile() {
 func (o *Output) CreateLibFile() {
 	var def def.DefFile
 
-	// In case of static linking OriginalPath is DLL name itself
-	def.DllName = o.Dll.OriginalPath
+	// In case of static linking Original is DLL name itself
+	def.DllName = o.Dll.Original
 
 	for _, function := range o.Dll.ExportedFunctions {
 		if function.Forwarder == "" {

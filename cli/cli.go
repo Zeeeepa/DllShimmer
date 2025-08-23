@@ -8,11 +8,12 @@ import (
 )
 
 type CliFlags struct {
-	Input        string
-	Output       string
-	OriginalPath string
-	Mutex        bool
-	Static       bool
+	Input     string
+	Output    string
+	Original  string
+	Mutex     bool
+	Static    bool
+	DebugFile string
 }
 
 func IsValidDllName(filename string) bool {
@@ -41,8 +42,11 @@ func ParseCli() *CliFlags {
 	flag.StringVar(&flags.Output, "o", "", "")
 	flag.StringVar(&flags.Output, "output", "", "")
 
-	flag.StringVar(&flags.OriginalPath, "x", "", "")
-	flag.StringVar(&flags.OriginalPath, "original-path", "", "")
+	flag.StringVar(&flags.Original, "x", "", "")
+	flag.StringVar(&flags.Original, "original", "", "")
+
+	flag.StringVar(&flags.DebugFile, "d", "", "")
+	flag.StringVar(&flags.DebugFile, "debug-file", "", "")
 
 	flag.BoolVar(&flags.Mutex, "m", false, "")
 	flag.BoolVar(&flags.Mutex, "mutex", false, "")
@@ -54,10 +58,11 @@ func ParseCli() *CliFlags {
 		fmt.Println()
 		fmt.Println("Usage:")
 		fmt.Println()
-		fmt.Printf("  %-26s %s\n", "-i, --input <file>", "Input DLL file (required)")
-		fmt.Printf("  %-26s %s\n", "-o, --output <dir>", "Output directory (required)")
-		fmt.Printf("  %-26s %s\n", "-x, --original-path <path>", "Path to original DLL on target (required)")
+		fmt.Printf("  %-26s %s\n", "-i, --input <path>", "Input DLL file (required)")
+		fmt.Printf("  %-26s %s\n", "-o, --output <path>", "Output directory (required)")
+		fmt.Printf("  %-26s %s\n", "-x, --original <path>", "Path to original DLL on target (required)")
 		fmt.Printf("  %-26s %s\n", "-m, --mutex", "Multiple execution prevention (default: false)")
+		fmt.Printf("  %-26s %s\n", "    --debug-file <path>", "Save debug logs to file")
 		fmt.Printf("  %-26s %s\n", "    --static", "Static linking to original DLL via IAT (default: false)")
 		fmt.Printf("  %-26s %s\n", "-h, --help", "Show this help")
 		fmt.Println()
@@ -71,12 +76,12 @@ func ParseCli() *CliFlags {
 
 	flag.Parse()
 
-	if flags.Input == "" || flags.Output == "" || flags.OriginalPath == "" {
+	if flags.Input == "" || flags.Output == "" || flags.Original == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	if flags.Static && !IsValidDllName(flags.OriginalPath) {
+	if flags.Static && !IsValidDllName(flags.Original) {
 		fmt.Fprintf(os.Stderr, "[!] Invalid '-x' parameter value:\n")
 		fmt.Fprintf(os.Stderr, "In case of static linking enabled '-x' parameter must be valid Windows DLL file name with no path information. E.g. kernel32.dll, user32.dll.")
 		os.Exit(1)
