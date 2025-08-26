@@ -117,4 +117,4 @@ In case of static linking, we really only have one option:
 
 ## TODO
 
-- Cache LoadLibraryA() and GetProcAddress() pointers not to call WinAPI every time (better performance and more stealthy).
+- Support C++ mangled function names

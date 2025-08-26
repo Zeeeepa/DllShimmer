@@ -11,6 +11,7 @@
 
 {{- if eq (len $v.Forwarder) 0 }}
 
+// {{$v.Name}}
 extern "C" UINT64 {{$v.Name}}Fwd(PARAMS) {
     #ifdef DEBUG
         dbgf("{{$v.Name}} called");

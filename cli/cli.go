@@ -7,13 +7,16 @@ import (
 	"strings"
 )
 
+const VERSION = "1.1.1"
+
 type CliFlags struct {
-	Input     string
-	Output    string
-	Original  string
-	Mutex     bool
-	Static    bool
-	DebugFile string
+	Input       string
+	Output      string
+	Original    string
+	Mutex       bool
+	Static      bool
+	DebugFile   string
+	ShowVersion bool
 }
 
 func IsValidDllName(filename string) bool {
@@ -45,13 +48,15 @@ func ParseCli() *CliFlags {
 	flag.StringVar(&flags.Original, "x", "", "")
 	flag.StringVar(&flags.Original, "original", "", "")
 
-	flag.StringVar(&flags.DebugFile, "d", "", "")
 	flag.StringVar(&flags.DebugFile, "debug-file", "", "")
 
 	flag.BoolVar(&flags.Mutex, "m", false, "")
 	flag.BoolVar(&flags.Mutex, "mutex", false, "")
 
 	flag.BoolVar(&flags.Static, "static", false, "")
+
+	flag.BoolVar(&flags.ShowVersion, "v", false, "")
+	flag.BoolVar(&flags.ShowVersion, "version", false, "")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage: DllShimmer -i <path> -o <path> -p <path>\n")
@@ -62,8 +67,9 @@ func ParseCli() *CliFlags {
 		fmt.Printf("  %-26s %s\n", "-o, --output <path>", "Output directory (required)")
 		fmt.Printf("  %-26s %s\n", "-x, --original <path>", "Path to original DLL on target (required)")
 		fmt.Printf("  %-26s %s\n", "-m, --mutex", "Multiple execution prevention (default: false)")
-		fmt.Printf("  %-26s %s\n", "    --debug-file <path>", "Save debug logs to a file (default: stdout)")
 		fmt.Printf("  %-26s %s\n", "    --static", "Static linking to original DLL via IAT (default: false)")
+		fmt.Printf("  %-26s %s\n", "    --debug-file <path>", "Save debug logs to a file (default: stdout)")
+		fmt.Printf("  %-26s %s\n", "-v, --version", "Show version of DllShimmer")
 		fmt.Printf("  %-26s %s\n", "-h, --help", "Show this help")
 		fmt.Println()
 		fmt.Println("Example:")
@@ -75,6 +81,11 @@ func ParseCli() *CliFlags {
 	}
 
 	flag.Parse()
+
+	if flags.ShowVersion {
+		fmt.Printf("DllShimmer %s\n", VERSION)
+		os.Exit(0)
+	}
 
 	if flags.Input == "" || flags.Output == "" || flags.Original == "" {
 		flag.Usage()
@@ -91,7 +102,7 @@ func ParseCli() *CliFlags {
 }
 
 func PrintBanner() {
-	banner := `
+	banner := fmt.Sprintf(`
 ▓█████▄  ██▓     ██▓                           
 ▒██▀ ██▌▓██▒    ▓██▒                 By @Print3M
 ░██   █▌▒██░    ▒██░            (print3m.github.io)
@@ -99,7 +110,7 @@ func PrintBanner() {
 ░▒████▓ ░██████▒░██████▒            Documentation:
  ▒▒▓  ▒ ░ ▒░▓  ░░ ▒░▓  ░     github.com/Print3M/DllShimmer
  ░ ▒  ▒ ░ ░ ▒  ░░ ░ ▒  ░                                   
- ░ ░  ░   ░ ░     ░ ░                   2025
+ ░ ░  ░   ░ ░     ░ ░                   %s
    ░        ░  ░    ░  ░                                   
  ░                                                         
   ██████  ██░ ██  ██▓ ███▄ ▄███▓ ███▄ ▄███▓▓█████  ██▀███  
@@ -111,7 +122,7 @@ func PrintBanner() {
 ░ ░▒  ░ ░ ▒ ░▒░ ░ ▒ ░░  ░      ░░  ░      ░ ░ ░  ░  ░▒ ░ ▒░
 ░  ░  ░   ░  ░░ ░ ▒ ░░      ░   ░      ░      ░     ░░   ░ 
       ░   ░  ░  ░ ░         ░          ░      ░  ░   ░     
-`
+`, VERSION)
 
 	fmt.Print(banner)
 	fmt.Println()
