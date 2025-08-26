@@ -30,6 +30,7 @@
 
 extern "C" __declspec(dllimport) UINT64 {{$v.Name}}(PARAMS);
 
+// {{$v.Name}}
 extern "C" UINT64 {{$v.Name}}Fwd(PARAMS) {
     #ifdef DEBUG
         dbgf("{{$v.Name}} called");
